@@ -1,0 +1,95 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="${packageName}.${activityClass}" >
+
+    <uk.co.krispopat.synthexperiments.WaveView
+        android:id="@+id/waveView"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:padding="20dp"
+        android:paddingBottom="40dp" />
+
+    <Button
+        android:id="@+id/button1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/waveView"
+        android:layout_marginLeft="23dp"
+        android:onClick="displaySineWave"
+        android:text="@string/sine_button" />
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/waveView"
+        android:layout_marginLeft="23dp"
+        android:layout_toRightOf="@id/button1"
+        android:onClick="displayTriangleWave"
+        android:text="@string/triangle_button" />
+
+    <Button
+        android:id="@+id/button3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/waveView"
+        android:layout_marginLeft="23dp"
+        android:layout_toRightOf="@id/button2"
+        android:onClick="displaySawtoothWave"
+        android:text="@string/sawtooth_button" />
+
+    <Button
+        android:id="@+id/button4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/button1"
+        android:layout_marginLeft="23dp"
+        android:onClick="displayBellCurveRamp"
+        android:text="@string/ramp1_button" />
+
+    <Button
+        android:id="@+id/button6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/button4"
+        android:layout_marginLeft="23dp"
+        android:onClick="displaySlopeRamp"
+        android:text="@string/ramp3_button" />
+
+    <EditText
+        android:id="@+id/bufferWidth"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/button6"
+        android:layout_alignLeft="@+id/endAmp"
+        android:ems="10"
+        android:inputType="numberSigned"
+        android:text="@string/default_buffer_width" >
+
+        <requestFocus />
+    </EditText>
+
+    <EditText
+        android:id="@+id/startAmp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/button2"
+        android:layout_below="@+id/button6"
+        android:layout_marginTop="22dp"
+        android:ems="10"
+        android:inputType="numberSigned|numberDecimal"
+        android:text="@string/default_start_amp" />
+
+    <EditText
+        android:id="@+id/endAmp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/startAmp"
+        android:layout_alignLeft="@+id/startAmp"
+        android:ems="10"
+        android:inputType="numberSigned|numberDecimal"
+        android:text="@string/default_end_amp" />
+
+</RelativeLayout>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">SynthExperiments</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="sine_button">Load Sine Wave</string>
+    <string name="triangle_button">Load Triangle Wave</string>
+    <string name="sawtooth_button">Load Sawtooth Wave</string>
+    <string name="ramp1_button">Bell Curve</string>
+    <string name="ramp2_button">Bell Curve Falling</string>
+    <string name="ramp3_button">Slope</string>
+    <string name="ramp4_button">Slope Falling</string>
+    <string name="default_buffer_width">128</string>
+    <string name="default_start_amp">0.1</string>
+    <string name="default_end_amp">0.9</string>
+
+</resources>
