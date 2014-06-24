@@ -6,9 +6,11 @@
  */
 
 
-#include <OpenSLManager.h>
 #include <assert.h>
-#include "SoundDistributor.h"
+#include <malloc.h>
+#include <OpenSLManager.h>
+#include <stddef.h>
+#include <SoundDistributor.h>
 
 extern "C" {
 	void playerCallback(SLAndroidSimpleBufferQueueItf queueItf, void *data)
@@ -19,13 +21,13 @@ extern "C" {
 }
 
 
-OpenSLManager::OpenSLManager(SoundDistributor* source, int sampleRate, int bufferSize  )
+OpenSLManager::OpenSLManager(SoundDistributor* source, int inSampleRate, int inBufferSize  )
 {
 	mSource = source;
-	mSampleRate = sampleRate;
-	mBufferSize = bufferSize;
 	mCurrentBuffer = 0;
-
+	mBufferSize = inBufferSize;
+	mSampleRate = inSampleRate;
+	mBuffer = (int16_t*) malloc( inBufferSize * cNumberOfBuffers );
 	// sanity
 	mPlayerObject = NULL;
 	mPlayer = NULL;
@@ -55,14 +57,15 @@ OpenSLManager::OpenSLManager(SoundDistributor* source, int sampleRate, int buffe
 OpenSLManager::~OpenSLManager()
 {
 	if ( mPlayerObject != NULL ) {
-		(*mPlayerObject)->Destroy(mPlayerObject);
+		( *mPlayerObject )->Destroy( mPlayerObject );
 	}
 	if ( mOutputMix != NULL ) {
-		(*mOutputMix)->Destroy(mOutputMix);
+		( *mOutputMix )->Destroy( mOutputMix );
 	}
 	if ( mEngineObject != NULL ) {
-		(*mEngineObject)->Destroy(mEngineObject);
+		( *mEngineObject )->Destroy( mEngineObject );
 	}
+	free( ( void* )mBuffer );
 }
 
 
@@ -83,7 +86,7 @@ void OpenSLManager::Start()
 	SLDataFormat_PCM pcmFormat = {
 			SL_DATAFORMAT_PCM,
 			1,
-			mSampleRate * 1000,
+			mSampleRate,
 			SL_PCMSAMPLEFORMAT_FIXED_16,
 			SL_PCMSAMPLEFORMAT_FIXED_16,
 			SL_SPEAKER_FRONT_CENTER,
@@ -164,7 +167,7 @@ void OpenSLManager::transferSamples( SLAndroidSimpleBufferQueueItf queue, void* 
 {
 	int16_t *bufferPointer = mBuffer + (mBufferSize * mCurrentBuffer);
 	mSource->GetAudioSamples( mBufferSize, bufferPointer );
-	SLresult result = (*queue)->Enqueue(mPlayerBufferQueue, bufferPointer, mBufferSize * 2);
+	SLresult result = (*queue)->Enqueue(mPlayerBufferQueue, bufferPointer, mBufferSize);
 	assert ( result == SL_RESULT_SUCCESS);
 	mCurrentBuffer = (mCurrentBuffer + 1) % cNumberOfBuffers;
 }

@@ -13,9 +13,14 @@
 class SoundDistributor {
 
 public:
+	SoundDistributor( int inBufferSize, int inSampleRate ): bufferSize(inBufferSize), sampleRate(inSampleRate){}
 	virtual ~SoundDistributor(){}
 	virtual void GetAudioSamples( int audioSampleCount, int16_t *buffer )=0;
 
+
+protected:
+	int bufferSize;
+	int sampleRate;
 };
 
 

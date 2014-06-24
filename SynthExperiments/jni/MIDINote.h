@@ -12,8 +12,8 @@
 
 class MIDINote {
 public:
-				MIDINote( int bufferSize );
-				MIDINote( int bufferSizer, uint8_t* msg, int msgLength);
+				MIDINote( );
+				MIDINote( uint8_t* msg, int msgLength);
 	virtual 	~MIDINote();
 
 	bool		updateFromMIDIMessage(uint8_t* msg, int msgLength);
@@ -36,13 +36,11 @@ public:
 	// public properties - accessed in real time.
 
 	double		frequency;
-	uint32_t	oscilatorPhase;
+	double		oscilatorPhase;
 
 	uint8_t		envelopePhase;
 	uint32_t	envelopePhasePosition;
 
-	int16_t*	noteBuffer;
-	int			bufferSize;
 private:
 
 	uint8_t		pitch; // midi pitch as in 0x3C is middle c

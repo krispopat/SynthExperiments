@@ -10,7 +10,7 @@
 #include <MIDINote.h>
 #include <cmath>
 
-MIDINote::MIDINote( int bufferSize ) {
+MIDINote::MIDINote( ) {
 	pitch = 0x0;
 	channel = 0x0;
 	velocity = 0x0;
@@ -21,20 +21,16 @@ MIDINote::MIDINote( int bufferSize ) {
 	oscilatorPhase = 0;
 	envelopePhase = 0;
 	envelopePhasePosition = 0;
-	noteBuffer = (int16_t*) malloc ( bufferSize * sizeof(int16_t));
-	this->bufferSize = bufferSize;
+
 }
 
-MIDINote::MIDINote( int bufferSize, uint8_t* msg, int msgLength)
+MIDINote::MIDINote( uint8_t* msg, int msgLength)
 {
-	noteBuffer = (int16_t*)malloc ( bufferSize * sizeof(int16_t));
-	this->bufferSize = bufferSize;
 	updateFromMIDIMessage(msg, msgLength);
 }
 
 MIDINote::~MIDINote()
 {
-	if ( noteBuffer) free ( noteBuffer );
 }
 
 
@@ -45,6 +41,7 @@ bool MIDINote::updateFromMIDIMessage(uint8_t* msg, int msgLength)
 		velocity = 0;
 		this->setKeydown(false);
 		envelopePhase = RELEASE_PHASE;
+		envelopePhasePosition = 0;
 		return true;
 	}
 	else if ( channelMessage & 0xf0 == 0x90 ) {

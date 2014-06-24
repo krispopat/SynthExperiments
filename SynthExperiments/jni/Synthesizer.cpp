@@ -12,10 +12,10 @@
 #include <WaveTable.h>
 
 
-Synthesizer::Synthesizer( int bufferSize ) {
-
+Synthesizer::Synthesizer( int inBufferSize, int inSampleRate ):SoundDistributor(inBufferSize, inSampleRate )
+{
 	for ( int i = 0; i < MAX_POLYPHONY; i++ ) {
-		notes[i] = new MIDINote( bufferSize );
+		notes[i] = new MIDINote(  );
 	}
 	envelope = new ADSREnvelope();
 	sineOscillator = new WaveTable ( sine, 1024, 1 ); // just one cycle
@@ -39,6 +39,7 @@ Synthesizer::~Synthesizer() {
 }
 
 
+
 void Synthesizer::GetAudioSamples( int audioSampleCount, int16_t *buffer )
 {
 	int i,j;
@@ -51,6 +52,9 @@ void Synthesizer::GetAudioSamples( int audioSampleCount, int16_t *buffer )
 			if ( note->envelopePhase == SUSTAIN_PHASE ) {
 				envelopeFactor = envelope->sustain;
 			}
+			else {
+
+			}
 			// if envelope phase is SUSTAIN_PHASE then get sustain factor value
 			// else
 			// get current envelope phase position from the note
@@ -59,9 +63,19 @@ void Synthesizer::GetAudioSamples( int audioSampleCount, int16_t *buffer )
 
 			// get frequency from note
 			// calculate delta for oscillator lookup
+
+			double oscillatorFrequency = sampleRate / ( sineOscillator->mTableSize );
+			double oscillatorDelta = note->frequency / oscillatorFrequency;
+
 			// get last oscillator delta position (oscillatorPhase) used
 			// add delta to delta position for first lookup
 			// rotate if required
+
+			double currentOscillatorPhase = note->oscilatorPhase + oscillatorDelta;
+			if ( currentOscillatorPhase > sineOscillator->mTableSize ) {
+				currentOscillatorPhase = currentOscillatorPhase - sineOscillator->mTableSize;
+			}
+
 			for ( j = 0; j < audioSampleCount; j++ ) {
 
 

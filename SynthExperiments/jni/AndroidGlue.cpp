@@ -39,10 +39,11 @@ jfloatArray convertFloatArray ( JNIEnv *env, float* nativeArray, int32_t arraySi
 
 
 extern "C" {
-	void Java_uk_co_krispopat_synth_AndroidGlue_synthInit( JNIEnv *env, jobject obj, jboolean suspended, jint sampleRate, jint bufferSize )
+	void Java_uk_co_krispopat_synth_AndroidGlue_synthInit( JNIEnv *env, jobject obj, jboolean suspended, jint audioManagerSampleRate, jint audioManagerFramesPerBuffer )
 	{
-		gSynth = new Synthesizer( bufferSize );
-		gSLManager = new OpenSLManager ( gSynth, sampleRate, bufferSize );
+		int bufferSize = audioManagerFramesPerBuffer * 4;
+		gSynth = new Synthesizer( audioManagerSampleRate, bufferSize  );
+		gSLManager = new OpenSLManager ( gSynth, audioManagerSampleRate, bufferSize );
 		if ( !suspended ) {
 			gSLManager->Start();
 		}

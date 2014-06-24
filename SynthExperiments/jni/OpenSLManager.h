@@ -19,7 +19,6 @@ extern "C" {
 }
 
 const int cNumberOfBuffers = 2;
-const int cMaxBufferSize = 1024;
 
 
 
@@ -42,7 +41,7 @@ private:
 	int					mBufferSize;
 	int					mSampleRate;
 	int					mCurrentBuffer;
-	int16_t				mBuffer[cMaxBufferSize * cNumberOfBuffers];
+	int16_t*			mBuffer;
 	SoundDistributor*	mSource;
 
 	// OpenSL refs

@@ -20,7 +20,7 @@ class WaveTable;
 
 class Synthesizer: public SoundDistributor {
 public:
-	Synthesizer( int bufferSize );
+	Synthesizer( int inBufferSize, int inSampleRate );
 	virtual ~Synthesizer();
 
 	void GetAudioSamples( int audioSampleCount, int16_t *buffer );

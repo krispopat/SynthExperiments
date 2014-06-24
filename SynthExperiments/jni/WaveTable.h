@@ -32,6 +32,9 @@ public:
 
 	int16_t*	getTable() { return mTable; }
 
+	int			mTableSize;
+	float		mFrequency;
+
 private:
 
 	void 		generateSineWave();
@@ -39,8 +42,7 @@ private:
 	void 		generateTriangleWave();
 
 	TableType	mTableType;
-	int			mTableSize;
-	float		mFrequency;
+
 
 	int16_t		*mTable;
 };
