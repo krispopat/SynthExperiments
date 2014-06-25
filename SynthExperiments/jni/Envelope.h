@@ -20,7 +20,7 @@ const uint8_t SUSTAIN_PHASE = 0xEF;
 class Envelope {
 public:
 				Envelope();
-				Envelope( float sustainLevel );
+				Envelope( double sustainLevel );
 	virtual		~Envelope( );
 
 	Ramp*		createRamp ( int32_t rampSize, int32_t rampLength, RampType rampType, float startAmp, float endAmp );
@@ -29,7 +29,7 @@ public:
 
 	std::vector<Ramp*>		ramps;
 
-	float		sustain;
+	double		sustain;
 
 	Ramp*		releaseRamp;
 

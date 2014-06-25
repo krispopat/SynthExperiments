@@ -40,11 +40,12 @@ public:
 	int32_t		getRampTimeMs( ) const;
 	void		setRampTimeMs( int32_t rampTimeMs );
 
+	int32_t			rampTimeMS;
+
 private:
 	float*  		rampData;
 	RampType		rampType;
 	int32_t			rampDataSize;
-	int32_t			rampTimeMS;
 };
 
 #endif /* RAMP_H_ */

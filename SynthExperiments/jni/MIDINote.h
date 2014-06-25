@@ -39,7 +39,7 @@ public:
 	double		oscilatorPhase;
 
 	uint8_t		envelopePhase;
-	uint32_t	envelopePhasePosition;
+	double		envelopePhasePosition;
 
 private:
 

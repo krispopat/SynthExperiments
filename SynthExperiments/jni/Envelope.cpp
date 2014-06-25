@@ -16,7 +16,7 @@ Envelope::Envelope()
 	releaseRamp = NULL;
 }
 
-Envelope::Envelope( float sustainLevel )
+Envelope::Envelope( double sustainLevel )
 {
 	sustain = sustainLevel;
 	releaseRamp = NULL;
