@@ -50,6 +50,11 @@ void WaveTable::generateWave()
 	}
 }
 
+int16_t WaveTable::lookup(int32_t phase )
+{
+	return mTable[phase];
+}
+
 
 // privates!
 
