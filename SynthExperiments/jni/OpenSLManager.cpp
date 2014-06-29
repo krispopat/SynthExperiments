@@ -6,19 +6,21 @@
  */
 
 
+//#include <android/log.h>
 #include <assert.h>
 #include <malloc.h>
 #include <OpenSLManager.h>
-#include <stddef.h>
 #include <SoundDistributor.h>
+#include <cstring>
 
-extern "C" {
-	void playerCallback(SLAndroidSimpleBufferQueueItf queueItf, void *data)
-	{
-		OpenSLManager* manager = (OpenSLManager*)data;
-		manager->transferSamples(queueItf, data);
-	}
+
+
+void playerCallback(SLAndroidSimpleBufferQueueItf queueItf, void *data)
+{
+	OpenSLManager* manager = (OpenSLManager*)data;
+	manager->transferSamples( queueItf );
 }
+
 
 
 OpenSLManager::OpenSLManager(SoundDistributor* source, int inSampleRate, int inBufferSize  )
@@ -27,7 +29,9 @@ OpenSLManager::OpenSLManager(SoundDistributor* source, int inSampleRate, int inB
 	mCurrentBuffer = 0;
 	mBufferSize = inBufferSize;
 	mSampleRate = inSampleRate;
-	mBuffer = (int16_t*) malloc( inBufferSize * cNumberOfBuffers );
+	size_t size = ( inBufferSize * sizeof ( int16_t)) * cNumberOfBuffers;
+	mBuffer = (int16_t*) malloc( size );
+	memset( mBuffer, 0, size );
 	// sanity
 	mPlayerObject = NULL;
 	mPlayer = NULL;
@@ -86,7 +90,7 @@ void OpenSLManager::Start()
 	SLDataFormat_PCM pcmFormat = {
 			SL_DATAFORMAT_PCM,
 			1,
-			mSampleRate,
+			mSampleRate * 1000,
 			SL_PCMSAMPLEFORMAT_FIXED_16,
 			SL_PCMSAMPLEFORMAT_FIXED_16,
 			SL_SPEAKER_FRONT_CENTER,
@@ -140,9 +144,12 @@ void OpenSLManager::Start()
 
 	result = (*mPlayerBufferQueue)->RegisterCallback (
 			mPlayerBufferQueue,
-			&playerCallback,
-			NULL);
+			playerCallback,
+			this);
 	assert (result == SL_RESULT_SUCCESS);
+	for ( int i = 0; i < cNumberOfBuffers; i++ ) {
+		transferSamples( mPlayerBufferQueue );
+	}
 
 	result = (*mPlayer)->SetPlayState(mPlayer, SL_PLAYSTATE_PLAYING);
 	assert (result == SL_RESULT_SUCCESS);
@@ -157,17 +164,28 @@ void OpenSLManager::Stop()
 	}
 }
 
+int16_t* OpenSLManager::getOutputBuffer( )
+{
+	return mBuffer;
+}
+
+
+int OpenSLManager::getOutputBufferSize()
+{
+	return mBufferSize * cNumberOfBuffers;
+}
 
 
 // protected methods
 // This function treats mBuffer as three buffers
 // by using pointer arithmetic.
 // This practice is borrowed from Music Synthesizer for Android (url...)
-void OpenSLManager::transferSamples( SLAndroidSimpleBufferQueueItf queue, void* data )
+void OpenSLManager::transferSamples( SLAndroidSimpleBufferQueueItf queue )
 {
 	int16_t *bufferPointer = mBuffer + (mBufferSize * mCurrentBuffer);
 	mSource->GetAudioSamples( mBufferSize, bufferPointer );
-	SLresult result = (*queue)->Enqueue(mPlayerBufferQueue, bufferPointer, mBufferSize);
+	SLresult result = (*queue)->Enqueue(mPlayerBufferQueue, bufferPointer, mBufferSize * 2);
 	assert ( result == SL_RESULT_SUCCESS);
 	mCurrentBuffer = (mCurrentBuffer + 1) % cNumberOfBuffers;
 }
+

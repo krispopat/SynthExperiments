@@ -13,5 +13,12 @@
     <string name="default_buffer_width">128</string>
     <string name="default_start_amp">0.1</string>
     <string name="default_end_amp">0.9</string>
-
+    
+    <string name="note_c">C</string>
+    <string name="note_d">D</string>
+    <string name="note_e">E</string>
+    <string name="note_f">F</string>
+	<string name="note_g">G</string>
+	<string name="note_a">A</string>
+	<string name="note_b">B</string>
 </resources>

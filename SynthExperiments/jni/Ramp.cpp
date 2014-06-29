@@ -35,11 +35,12 @@ Ramp::~Ramp() {
 
 float Ramp::lookup ( int32_t millisecondsOffset )
 {
-	if ( millisecondsOffset > rampTimeMS ) {
+
+	int lookupDelta = (int)( ( float )rampDataSize / ( float )rampTimeMS ) * millisecondsOffset;
+	if ( lookupDelta >= rampDataSize ) {
 		return -1;
 	}
 	else {
-		int lookupDelta = (int)( ( float )rampDataSize / ( float )rampTimeMS ) * millisecondsOffset;
 		return rampData[lookupDelta];
 	}
 }
@@ -94,11 +95,10 @@ void Ramp::generateRamp( RampType rampType, int32_t dataSize, int32_t rampTime, 
 		}
 		else {
 			amp = startAmp - endAmp;
-			delta = 1.0/(float)dataSize;
-			deltaInc = 1.0;
+			delta = amp/(float)dataSize;
 			for ( int32_t i = 0; i < dataSize; i++ ) {
-				rampData[i] = deltaInc + endAmp;
-				deltaInc -= delta;
+				rampData[i] = startAmp;
+				startAmp -= delta;
 			}
 		}
 		break;

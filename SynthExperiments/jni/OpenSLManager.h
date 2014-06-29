@@ -30,12 +30,15 @@ public:
 	void Start();
 	void Stop();
 
+	int16_t* getOutputBuffer();
+	int getOutputBufferSize();
+
 	//void MIDIMessage ( int8_t *msg );
 
 	friend void playerCallback(SLAndroidSimpleBufferQueueItf queueItf, void *data);
 
 protected:
-	void transferSamples ( SLAndroidSimpleBufferQueueItf queueItf, void *data);
+	void transferSamples ( SLAndroidSimpleBufferQueueItf queueItf );
 
 private:
 	int					mBufferSize;

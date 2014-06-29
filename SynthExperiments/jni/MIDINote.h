@@ -22,6 +22,8 @@ public:
 
 	//void		computeSamples ( uint32_t bufferSize, int16_t *buffer );
 
+	void		resetNoteData( );
+
 	bool		isKeydown( ) const;
 	void		setKeydown( bool keydown );
 	bool 		isActive( ) const;
@@ -40,6 +42,7 @@ public:
 
 	uint8_t		envelopePhase;
 	double		envelopePhasePosition;
+
 
 private:
 

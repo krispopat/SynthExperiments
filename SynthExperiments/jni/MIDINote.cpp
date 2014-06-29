@@ -10,7 +10,24 @@
 #include <MIDINote.h>
 #include <cmath>
 
-MIDINote::MIDINote( ) {
+MIDINote::MIDINote( )
+{
+	resetNoteData();
+}
+
+MIDINote::MIDINote( uint8_t* msg, int msgLength)
+{
+	resetNoteData();
+	updateFromMIDIMessage(msg, msgLength);
+}
+
+MIDINote::~MIDINote()
+{
+}
+
+
+void MIDINote::resetNoteData( )
+{
 	pitch = 0x0;
 	channel = 0x0;
 	velocity = 0x0;
@@ -21,30 +38,19 @@ MIDINote::MIDINote( ) {
 	oscilatorPhase = 0;
 	envelopePhase = 0;
 	envelopePhasePosition = 0;
-
-}
-
-MIDINote::MIDINote( uint8_t* msg, int msgLength)
-{
-	updateFromMIDIMessage(msg, msgLength);
-}
-
-MIDINote::~MIDINote()
-{
 }
 
 
 bool MIDINote::updateFromMIDIMessage(uint8_t* msg, int msgLength)
 {
-	uint8_t channelMessage = msg[0];
-	if ( channelMessage & 0xf0 == 0x80 ) {
-		velocity = 0;
+	uint8_t channelMessage = msg[0] & 0xF0;
+	if ( channelMessage == 0x80 ) {
 		this->setKeydown(false);
 		envelopePhase = RELEASE_PHASE;
 		envelopePhasePosition = 0;
 		return true;
 	}
-	else if ( channelMessage & 0xf0 == 0x90 ) {
+	else if ( channelMessage == 0x90 ) {
 		pitch = msg[1];
 		channel = channelMessage & 0x0F;
 		velocity = msg[2];

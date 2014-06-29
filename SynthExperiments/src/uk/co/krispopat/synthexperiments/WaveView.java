@@ -15,7 +15,7 @@ public class WaveView extends View {
 	
 	private int contentWidth;
 	private int contentHeight;
-	private int[] waveTable;
+	private short[] waveTable;
 	private float[] rampTable;
 	private Rect bounds = null;
 	private Paint paint;
@@ -69,7 +69,8 @@ public class WaveView extends View {
 			for ( int i = 0; i < nx; i+=2 ) {
 				int arrayIndex = (int)((i / 2) * indexDelta);
 				points[i] = hpos;
-				points[i+1] = ( contentHeight / 2 ) - ( waveTable[arrayIndex] / sampleAmpDelta );
+				int amp = waveTable[arrayIndex];
+				points[i+1] = ( contentHeight / 2 ) - ( (float)amp / sampleAmpDelta );
 				hpos += (sampleWidthDelta < 1 ) ? 1/sampleWidthDelta : 1;
 			}
 			
@@ -108,11 +109,11 @@ public class WaveView extends View {
 		bounds = new Rect(0,0,getWidth(),getHeight());
 	}
 
-	public int[] getWaveTable() {
+	public short[] getWaveTable() {
 		return waveTable;
 	}
 
-	public void setWaveTable(int[] waveTable) {
+	public void setWaveTable(short[] waveTable) {
 		this.waveTable = waveTable;
 		this.rampTable = null;
 		initVars();

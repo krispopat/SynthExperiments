@@ -20,6 +20,8 @@ public class AndroidGlue {
 	
 	public native int[] getTriangleWave(int size);
 	
+	public native short[] getOutputBuffer();
+	
 	
 	static {
 		System.loadLibrary("KPSynth");

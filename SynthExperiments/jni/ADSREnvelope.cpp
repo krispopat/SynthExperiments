@@ -23,6 +23,7 @@ ADSREnvelope::ADSREnvelope( uint32_t attack, uint32_t decay, float sustain, uint
 void ADSREnvelope::generateEnvelopeRamps(uint32_t attack, uint32_t decay,
 		float sustain, uint32_t release)
 {
+	int rampSize = 512;
 	this->createRamp( attack, attack, slope, 0.0, 1.0 );
 	this->createRamp( decay, decay, slope, 1.0, sustain );
 	this->sustain = sustain;

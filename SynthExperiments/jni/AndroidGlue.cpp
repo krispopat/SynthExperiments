@@ -5,13 +5,14 @@
 #include <Synthesizer.h>
 #include <WaveTable.h>
 #include <cstdint>
+#include <unistd.h>
 
 Synthesizer* gSynth;
 OpenSLManager* gSLManager;
 
 
 
-jshortArray convertToJavaArray ( JNIEnv *env, short* nativeArray, int32_t nativeArraySize )
+jshortArray convertToJavaArray ( JNIEnv *env, int16_t* nativeArray, int32_t nativeArraySize )
 {
 	jshortArray javaArray = env->NewShortArray(nativeArraySize);
 
@@ -41,8 +42,9 @@ jfloatArray convertFloatArray ( JNIEnv *env, float* nativeArray, int32_t arraySi
 extern "C" {
 	void Java_uk_co_krispopat_synth_AndroidGlue_synthInit( JNIEnv *env, jobject obj, jboolean suspended, jint audioManagerSampleRate, jint audioManagerFramesPerBuffer )
 	{
-		int bufferSize = audioManagerFramesPerBuffer * 4;
-		gSynth = new Synthesizer( audioManagerSampleRate, bufferSize  );
+		usleep(5000 * 1000);
+		int bufferSize = audioManagerFramesPerBuffer;
+		gSynth = new Synthesizer( bufferSize, audioManagerSampleRate  );
 		gSLManager = new OpenSLManager ( gSynth, audioManagerSampleRate, bufferSize );
 		if ( !suspended ) {
 			gSLManager->Start();
@@ -127,5 +129,13 @@ extern "C" {
 		jshortArray returnArray = convertToJavaArray ( env, triangleTable->getTable(), s );
 		delete triangleTable;
 		return returnArray;
+	}
+
+
+	jshortArray Java_uk_co_krispopat_synth_AndroidGlue_getOutputBuffer ( JNIEnv *env, jobject object )
+	{
+		int16_t* outBuffer = gSLManager->getOutputBuffer();
+		int32_t s = gSLManager->getOutputBufferSize();
+		return convertToJavaArray ( env, outBuffer, s );
 	}
 }

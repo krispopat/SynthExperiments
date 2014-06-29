@@ -10,10 +10,10 @@
 
 #include <Envelope.h>
 
-const uint32_t		DEFAULT_ATTACK = 29;
-const uint32_t		DEFAULT_DECAY = 100;
-const float			DEFAULT_SUSTAIN = 0.8;
-const uint32_t		DEFAULT_RELEASE = 40;
+const uint32_t		DEFAULT_ATTACK = 25;
+const uint32_t		DEFAULT_DECAY = 2000;
+const float			DEFAULT_SUSTAIN = 0.4;
+const uint32_t		DEFAULT_RELEASE = 128;
 
 class ADSREnvelope: public Envelope {
 public:

@@ -19,6 +19,7 @@ Synthesizer::Synthesizer( int inBufferSize, int inSampleRate ):SoundDistributor(
 	}
 	envelope = new ADSREnvelope();
 	sineOscillator = new WaveTable ( sine, 2048, 1 ); // just one cycle
+	sineOscillator->generateWave();
 	noteIndex = 0;
 }
 
@@ -44,9 +45,11 @@ void Synthesizer::GetAudioSamples( int audioSampleCount, int16_t *buffer )
 {
 	int i,j;
 	bool firstIteration = true;
+	bool noNotes = true;
 	for ( i = 0; i < MAX_POLYPHONY; i++ ) {
 		// for each note that is active
 		if ( notes[i]->isActive( ) ) {
+			noNotes = false;
 			MIDINote* note = notes[i];
 
 			// get frequency from note
@@ -54,14 +57,9 @@ void Synthesizer::GetAudioSamples( int audioSampleCount, int16_t *buffer )
 
 			double oscillatorFrequency = sampleRate / ( sineOscillator->mTableSize );
 			double oscillatorDelta = note->frequency / oscillatorFrequency;
-
 			double envelopePhaseDelta = (1.0/sampleRate)*1000.0;
 
-			// get last oscillator delta position (oscillatorPhase) used
-			// add delta to delta position for first lookup
-			// rotate if required
-
-
+			double volume = note->getVelocity()/(double)127.0;
 
 			for ( j = 0; j < audioSampleCount; j++ ) {
 				if ( firstIteration ) {
@@ -91,37 +89,47 @@ void Synthesizer::GetAudioSamples( int audioSampleCount, int16_t *buffer )
 					 }
 					 // calculate the offset in milliseconds
 					 // uses the stored phase position in the note
-					 note->envelopePhasePosition += envelopePhaseDelta;
 					 envelopeFactor = ramp->lookup( floor( note->envelopePhasePosition ) );
 					 if ( envelopeFactor == -1 ) {
 						 if ( note->envelopePhase == RELEASE_PHASE ) {
 							 // this note has finished, break to outer loop
-							 note->setActive(false);
+							 note->resetNoteData( );
 							 break;
 						 }
 						 // we've run out of lookup on that ramp, so move to next one
 						 note->envelopePhase++;
 						 note->envelopePhasePosition = note->envelopePhasePosition - ramp->rampTimeMS;
 						 // if we've run out of ramps at the onset of the note then go to sustain phase
-						 if ( note->envelopePhase > envelope->ramps.size() ) {
+						 if ( note->envelopePhase >= envelope->ramps.size() ) {
 							 note->envelopePhase = SUSTAIN_PHASE;
 							 envelopeFactor = envelope->sustain;
 						 }
+						 else {
+							 ramp = envelope->ramps.at( note->envelopePhase );
+							 envelopeFactor = ramp->lookup ( floor( note->envelopePhasePosition ) );
+						 }
 					 }
-					 // at the end of the loop all phase positions in the note need to be updated
+					 note->envelopePhasePosition += envelopePhaseDelta;
 				}
 				// get a sample from the oscillator
-				double currentOscillatorPhase = note->oscilatorPhase + oscillatorDelta;
+				double currentOscillatorPhase = note->oscilatorPhase;
+				int16_t oscAmp = sineOscillator->lookup( round( currentOscillatorPhase ) );
+				int16_t scaledAmp = (int16_t)( ((double)oscAmp * volume) * envelopeFactor );
+				buffer[j] += scaledAmp;
+				currentOscillatorPhase += oscillatorDelta;
 				if ( currentOscillatorPhase > sineOscillator->mTableSize ) {
 					currentOscillatorPhase = currentOscillatorPhase - sineOscillator->mTableSize;
 				}
 				note->oscilatorPhase = currentOscillatorPhase;
-				int16_t oscAmp = sineOscillator->lookup( floor( currentOscillatorPhase ) );
-				int16_t scaledAmp = (int16_t)( (float)oscAmp * envelopeFactor );
-				buffer[j] += scaledAmp;
 
 			}
 			firstIteration = false; // don't clean buffer each time!
+		}
+	}
+	if ( noNotes == true ) {
+		//clear the array - not sure memset is thread safe
+		for ( j = 0; j < audioSampleCount; j++ ) {
+			buffer[j] = 0;
 		}
 	}
 }
@@ -130,7 +138,22 @@ void Synthesizer::GetAudioSamples( int audioSampleCount, int16_t *buffer )
 void Synthesizer::MIDIMessage( uint8_t* msg, int messageLength )
 {
 	uint8_t message = msg[0] & 0xF0;
-	if ( message == 0x80 || message == 0x90 ) {
+	if ( message == 0x80 || ( message == 0x90 && msg[2] == 0 ) ) {
+		// note off
+		// search for the equivalent note on
+		MIDINote* n = NULL;
+		for ( int i = 0; i < MAX_POLYPHONY; i++ ) {
+			if ( notes[i]->getPitch() == msg[1]) {
+				n = notes[i];
+				break;
+			}
+		}
+		if ( n != NULL ) {
+			n->updateFromMIDIMessage( msg, messageLength );
+		}
+	}
+	else if ( message == 0x90 ) {
+		// find the next slot for a new note
 		notes[noteIndex++]->updateFromMIDIMessage(msg, messageLength );
 		if ( noteIndex == MAX_POLYPHONY ) {
 			noteIndex = 0; // rotate
