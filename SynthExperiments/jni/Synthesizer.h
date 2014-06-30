@@ -32,6 +32,7 @@ private:
 	MIDINote* notes[MAX_POLYPHONY]; // 16 note polyphony for now
 	ADSREnvelope* envelope; // single envelope
 	WaveTable* sineOscillator; // single oscilator for now
+	double oscillatorFrequency;
 };
 
 #endif /* SYNTHESIZER_H_ */

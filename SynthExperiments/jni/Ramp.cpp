@@ -36,7 +36,7 @@ Ramp::~Ramp() {
 float Ramp::lookup ( int32_t millisecondsOffset )
 {
 
-	int lookupDelta = (int)( ( float )rampDataSize / ( float )rampTimeMS ) * millisecondsOffset;
+	int lookupDelta = calculateDelta ( millisecondsOffset );
 	if ( lookupDelta >= rampDataSize ) {
 		return -1;
 	}
@@ -47,34 +47,66 @@ float Ramp::lookup ( int32_t millisecondsOffset )
 
 
 
-void Ramp::generateRamp( RampType rampType, int32_t dataSize, int32_t rampTime, float startAmp, float endAmp )
+float Ramp::calculatedLookup ( float startAmp, float endAmp, int32_t offset )
 {
-	if ( rampData ) free( rampData );
-	rampData = (float*)malloc( dataSize * sizeof ( float ) );
-	rampDataSize = dataSize;
-	rampTimeMS = rampTime;
+	int offsetIndex = calculateDelta ( offset );
+	if ( offsetIndex >= rampDataSize ) {
+		return -1;
+	}
+	else {
+		bool rising = ( startAmp < endAmp );
+		float cf, delta, inc, rot, amp;
+		amp = ( rising ) ? endAmp - startAmp : startAmp - endAmp;
+		switch ( rampType ) {
+		case bellCurve:
+			cf = 2 * pi * ( 1 / (float ) ( rampDataSize * 2 ) );
+			delta = 1;
+			rot = cf * offsetIndex;
+			if ( rising ) {
+				return  ( amp / 2 + startAmp ) + ( ( amp /2 ) * cos ( rot ) );
+			}
+			else {
+				return ( amp / 2 + endAmp ) + ( ( amp / 2 ) * cos ( rot ) );
+			}
+			break;
+
+		case slope:
+			delta = amp/(float)rampDataSize;
+			if ( rising ) {
+				return startAmp + ( offsetIndex * delta );
+			}
+			else {
+				return startAmp - ( offsetIndex * delta );
+			}
+		}
+	}
+}
+
+
+void Ramp::regenerateRamp ( float startAmp, float endAmp )
+{
 	bool rising = ( startAmp < endAmp );
 	float cf, delta, deltaInc, rotation, amp;
 	int i;
 	switch( rampType ) {
 	case bellCurve:
 		if ( rising ) {
-			cf = 2 * pi * ( 1 / ( float )( dataSize * 2 ) );
+			cf = 2 * pi * ( 1 / ( float )( rampDataSize * 2 ) );
 			delta = 1;
-			deltaInc = delta * dataSize;
+			deltaInc = delta * rampDataSize;
 			amp = endAmp - startAmp;
-			for ( i = 0; i < dataSize; i++ ) {
+			for ( i = 0; i < rampDataSize; i++ ) {
 				rotation = cf * deltaInc;
 				rampData[i] = ( amp / 2 + startAmp ) + ( ( amp / 2 ) * cos ( rotation ) );
 				deltaInc -= delta;
 			}
 		}
 		else {
-			cf = 2 * pi * ( 1 / ( float )( dataSize * 2 ) );
+			cf = 2 * pi * ( 1 / ( float )( rampDataSize * 2 ) );
 			delta = 1;
 			deltaInc = 0;
 			amp = startAmp - endAmp;
-			for ( i = 0; i < dataSize; i++ ) {
+			for ( i = 0; i < rampDataSize; i++ ) {
 				rotation = cf * deltaInc;
 				rampData[i] = ( amp / 2 + endAmp ) + ( ( amp / 2 ) * cos ( rotation ) );
 				deltaInc += delta;
@@ -85,18 +117,18 @@ void Ramp::generateRamp( RampType rampType, int32_t dataSize, int32_t rampTime, 
 	case slope:
 		if ( rising ) {
 			amp = endAmp - startAmp;
-			delta = amp/(float)dataSize;
+			delta = amp/(float)rampDataSize;
 			deltaInc = 0;
 
-			for ( int32_t i = 0; i < dataSize; i++ ) {
+			for ( int32_t i = 0; i < rampDataSize; i++ ) {
 				rampData[i] = deltaInc + startAmp;
 				deltaInc += delta;
 			}
 		}
 		else {
 			amp = startAmp - endAmp;
-			delta = amp/(float)dataSize;
-			for ( int32_t i = 0; i < dataSize; i++ ) {
+			delta = amp/(float)rampDataSize;
+			for ( int32_t i = 0; i < rampDataSize; i++ ) {
 				rampData[i] = startAmp;
 				startAmp -= delta;
 			}
@@ -107,11 +139,24 @@ void Ramp::generateRamp( RampType rampType, int32_t dataSize, int32_t rampTime, 
 	case empty:
 	default:
 		// fill with zeros
-		for ( int32_t i = 0; i < dataSize; i++ ) {
+		for ( int32_t i = 0; i < rampDataSize; i++ ) {
 			rampData[i] = 0.0;
 		}
 		break;
 	}
+}
+
+
+
+
+void Ramp::generateRamp( RampType rt, int32_t dataSize, int32_t rampTime, float startAmp, float endAmp )
+{
+	if ( rampData ) free( rampData );
+	rampData = (float*)malloc( dataSize * sizeof ( float ) );
+	rampDataSize = dataSize;
+	rampTimeMS = rampTime;
+	rampType = rt;
+	regenerateRamp ( startAmp, endAmp );
 }
 
 
@@ -137,3 +182,12 @@ void Ramp::setRampTimeMs(int32_t rampTimeMs)
 {
 	rampTimeMS = rampTimeMs;
 }
+
+
+// privates
+
+int32_t Ramp::calculateDelta ( int32_t offset )
+{
+	return (int32_t)( ( float )rampDataSize / ( float )rampTimeMS ) * offset;
+}
+

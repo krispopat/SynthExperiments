@@ -6,18 +6,26 @@
  */
 
 #include <Envelope.h>
-#include <malloc.h>
+//#include <malloc.h>
 #include <MIDINote.h>
+#include <Ramp.h>
+#include <stddef.h>
+#include <stl/_cmath.h>
+#include <stl/_vector.h>
 #include <cmath>
 
-MIDINote::MIDINote( )
+MIDINote::MIDINote( Envelope* inEnvelope, double inEnvelopePhaseDelta )
 {
 	resetNoteData();
+	envelope = inEnvelope;
+	envelopePhaseDelta = inEnvelopePhaseDelta;
 }
 
-MIDINote::MIDINote( uint8_t* msg, int msgLength)
+MIDINote::MIDINote( uint8_t* msg, int msgLength, Envelope* inEnvelope, double inEnvelopePhaseDelta )
 {
 	resetNoteData();
+	envelope = inEnvelope;
+	envelopePhaseDelta = inEnvelopePhaseDelta;
 	updateFromMIDIMessage(msg, msgLength);
 }
 
@@ -38,6 +46,7 @@ void MIDINote::resetNoteData( )
 	oscilatorPhase = 0;
 	envelopePhase = 0;
 	envelopePhasePosition = 0;
+	envelopeFactor = 0;
 }
 
 
@@ -58,10 +67,14 @@ bool MIDINote::updateFromMIDIMessage(uint8_t* msg, int msgLength)
 		frequency = computeFrequency();
 		oscilatorPhase = 0;
 		envelopePhasePosition = 0;
+		envelopeFactor = 0;
 		active = true;
 		if ( velocity == 0 ) {
 			this->setKeydown(false);
 			envelopePhase = RELEASE_PHASE;
+		}
+		else {
+			setKeydown(true);
 		}
 		return true;
 	}
@@ -86,6 +99,66 @@ void MIDINote::setNoteFromFrequency( double frequency )
 {
 	double n = frequency / 440.0;
 	pitch = (uint8_t)round( 69 + 12 * log2( n ) );
+}
+
+
+double MIDINote::calculateEnvelopeFactorPerSample ( )
+{
+	double factor;
+	if ( envelopePhase == 0 && keydown == false ) {
+		// note not active
+		return 0;
+	}
+	if ( envelopePhase == SUSTAIN_PHASE ) {
+		factor = envelope->sustain;
+	}
+	else {
+		// We are not in sustain phase on the envelope so
+		// get the current ramp
+		Ramp* ramp = NULL;
+		 if ( envelopePhase == RELEASE_PHASE ) {
+			 ramp = envelope->releaseRamp;
+			 factor = ramp->calculatedLookup(envelopeFactor,0, floor ( envelopePhasePosition) );
+		 }
+		 else {
+			 // We are assuming that note->envelopePhase is valid
+			 // if not this would be a programming error
+			ramp = envelope->ramps.at(envelopePhase);
+			factor = ramp->lookup( floor( envelopePhasePosition ) );
+			if ( envelopeFactor != -1 ) {
+				envelopeFactor = factor;
+			}
+		 }
+		 // calculate the offset in milliseconds
+		 // uses the stored phase position in the note
+		 if ( factor == -1 ) {
+			 if ( envelopePhase == RELEASE_PHASE ) {
+				 // this note has finished, break to outer loop
+				 resetNoteData( );
+				 factor = 0;
+			 }
+			 else {
+				 // we've run out of lookup on that ramp, so move to next one
+				 envelopePhase++;
+				 envelopePhasePosition = envelopePhasePosition - ramp->rampTimeMS;
+				 // if we've run out of ramps at the onset of the note then go to sustain phase
+				 if ( envelopePhase >= envelope->ramps.size() ) {
+					 envelopePhase = SUSTAIN_PHASE;
+					 factor = envelope->sustain;
+					 envelopeFactor = factor;
+				 }
+				 else {
+					 ramp = envelope->ramps.at( envelopePhase );
+					 factor = ramp->lookup ( floor( envelopePhasePosition ) );
+					 if ( factor != -1 ) {
+						 envelopeFactor = factor;
+					 }
+				 }
+			 }
+		 }
+		 envelopePhasePosition += envelopePhaseDelta;
+	}
+	return factor;
 }
 
 

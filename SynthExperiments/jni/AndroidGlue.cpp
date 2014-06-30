@@ -43,7 +43,7 @@ extern "C" {
 	void Java_uk_co_krispopat_synth_AndroidGlue_synthInit( JNIEnv *env, jobject obj, jboolean suspended, jint audioManagerSampleRate, jint audioManagerFramesPerBuffer )
 	{
 		usleep(5000 * 1000);
-		int bufferSize = audioManagerFramesPerBuffer;
+		int bufferSize = audioManagerFramesPerBuffer * 2;
 		gSynth = new Synthesizer( bufferSize, audioManagerSampleRate  );
 		gSLManager = new OpenSLManager ( gSynth, audioManagerSampleRate, bufferSize );
 		if ( !suspended ) {

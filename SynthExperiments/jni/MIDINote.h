@@ -10,10 +10,12 @@
 
 #include <stdint.h>
 
+class Envelope;
+
 class MIDINote {
 public:
-				MIDINote( );
-				MIDINote( uint8_t* msg, int msgLength);
+				MIDINote( Envelope* inEnvelope, double inEnvelopePhaseDelta );
+				MIDINote( uint8_t* msg, int msgLength, Envelope* inEnvelope, double inEnvelopePhaseDelta );
 	virtual 	~MIDINote();
 
 	bool		updateFromMIDIMessage(uint8_t* msg, int msgLength);
@@ -21,6 +23,8 @@ public:
 	void		setNoteFromFrequency ( double frequency );
 
 	//void		computeSamples ( uint32_t bufferSize, int16_t *buffer );
+
+	double		calculateEnvelopeFactorPerSample ( );
 
 	void		resetNoteData( );
 
@@ -35,6 +39,7 @@ public:
 	uint8_t 	getVelocity( ) const;
 
 
+
 	// public properties - accessed in real time.
 
 	double		frequency;
@@ -42,6 +47,8 @@ public:
 
 	uint8_t		envelopePhase;
 	double		envelopePhasePosition;
+	double		envelopePhaseDelta;
+	double		envelopeFactor;
 
 
 private:
@@ -52,6 +59,7 @@ private:
 	float		detune;
 	bool		keydown;
 	bool		active;
+	Envelope*	envelope;
 
 
 

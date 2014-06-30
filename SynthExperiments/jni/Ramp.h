@@ -33,6 +33,10 @@ public:
 
 	void		generateRamp( RampType rampType, int32_t dataSize, int32_t rampTime, float startAmp, float endAmp );
 
+	void		regenerateRamp ( float startAmp, float endAmp ); // for on the fly changes
+
+	float		calculatedLookup ( float startAmp, float endAmp, int32_t offset );
+
 	float		lookup ( int32_t milliSecondsOffset );
 
 	float*		getRampData( ) const;
@@ -43,6 +47,9 @@ public:
 	int32_t			rampTimeMS;
 
 private:
+
+	int32_t		calculateDelta( int32_t offset );
+
 	float*  		rampData;
 	RampType		rampType;
 	int32_t			rampDataSize;
