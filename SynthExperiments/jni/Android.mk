@@ -10,7 +10,8 @@ LOCAL_SRC_FILES :=	AndroidGlue.cpp \
 					Envelope.cpp \
 					Ramp.cpp \
 					ADSREnvelope.cpp \
-					MIDINote.cpp
+					MIDINote.cpp \
+					CyclicBuffer.cpp
 
 LOCAL_LDLIBS    += -lOpenSLES
 # for logging

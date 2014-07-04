@@ -4,91 +4,23 @@
     android:layout_height="match_parent"
     tools:context="${packageName}.${activityClass}" >
 
-    <ToggleButton
-        android:id="@+id/tbc"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginLeft="14dp"
-        android:layout_marginTop="17dp"
-        android:onClick="noteButtonClicked"
-        android:text="@string/note_c" />
-
-    <ToggleButton
-        android:id="@+id/tbd"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/tbc"
-        android:layout_alignBottom="@+id/tbc"
-        android:layout_marginLeft="10dp"
-        android:layout_toRightOf="@+id/tbc"
-        android:onClick="noteButtonClicked"
-        android:text="@string/note_d" />
-
-    <ToggleButton
-        android:id="@+id/tbe"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/tbd"
-        android:layout_alignBottom="@+id/tbd"
-        android:layout_marginLeft="10dp"
-        android:layout_toRightOf="@+id/tbd"
-        android:onClick="noteButtonClicked"
-        android:text="@string/note_e" />
-
-    <ToggleButton
-        android:id="@+id/tbf"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/tbe"
-        android:layout_alignBottom="@+id/tbe"
-        android:layout_marginLeft="10dp"
-        android:layout_toRightOf="@+id/tbe"
-        android:onClick="noteButtonClicked"
-        android:text="@string/note_f" />
-
-    <ToggleButton
-        android:id="@+id/tbg"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/tbf"
-        android:layout_alignBottom="@+id/tbf"
-        android:layout_marginLeft="10dp"
-        android:layout_toRightOf="@+id/tbf"
-        android:onClick="noteButtonClicked"
-        android:text="@string/note_g" />
-
-    <ToggleButton
-        android:id="@+id/tba"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/tbg"
-        android:layout_alignBottom="@+id/tbg"
-        android:layout_marginLeft="10dp"
-        android:layout_toRightOf="@+id/tbg"
-        android:onClick="noteButtonClicked"
-        android:text="@string/note_a" />
-
-    <ToggleButton
-        android:id="@+id/tbb"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/tba"
-        android:layout_alignBottom="@+id/tba"
-        android:layout_marginLeft="10dp"
-        android:layout_toRightOf="@+id/tba"
-        android:onClick="noteButtonClicked"
-        android:text="@string/note_b" />
-
     <uk.co.krispopat.synthexperiments.WaveView
         android:id="@+id/waveView1"
         android:layout_width="match_parent"
-        android:layout_height="490dp"
+        android:layout_height="280dp"
         android:layout_alignParentLeft="true"
-        android:layout_below="@id/tbc"
         android:layout_marginLeft="40dp"
         android:layout_marginRight="40dp"
         android:layout_marginTop="40dp" />
+
+    <uk.co.krispopat.synthexperiments.views.MIDIKeys
+        android:id="@+id/mIDIKeys1"
+        android:layout_width="wrap_content"
+        android:layout_height="280dp"
+        android:layout_alignLeft="@+id/waveView1"
+        android:layout_below="@+id/waveView1"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="40dp"
+        android:layout_marginTop="40dp"  />
 
 </RelativeLayout>

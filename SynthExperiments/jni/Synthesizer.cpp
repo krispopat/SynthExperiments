@@ -6,10 +6,12 @@
  */
 
 #include <ADSREnvelope.h>
+#include <CyclicBuffer.h>
 #include <MIDINote.h>
 #include <stddef.h>
 #include <Synthesizer.h>
 #include <WaveTable.h>
+#include <cmath>
 
 
 Synthesizer::Synthesizer( int inBufferSize, int inSampleRate ):SoundDistributor(inBufferSize, inSampleRate )
@@ -23,6 +25,7 @@ Synthesizer::Synthesizer( int inBufferSize, int inSampleRate ):SoundDistributor(
 	sineOscillator = new WaveTable ( sine, 2048, 1 ); // just one cycle
 	sineOscillator->generateWave();
 	oscillatorFrequency = sampleRate / ( sineOscillator->mTableSize );
+	inputStream = new CyclicBuffer();
 	noteIndex = 0;
 }
 
@@ -40,6 +43,9 @@ Synthesizer::~Synthesizer() {
 	if ( sineOscillator != NULL ) {
 		delete sineOscillator;
 	}
+	if ( inputStream != NULL ) {
+		delete inputStream;
+	}
 }
 
 
@@ -49,6 +55,8 @@ void Synthesizer::GetAudioSamples( int audioSampleCount, int16_t *buffer )
 	int i,j;
 	bool firstIteration = true;
 	bool noNotes = true;
+
+	CheckInputStream();
 
 	for ( i = 0; i < MAX_POLYPHONY; i++ ) {
 		// for each note that is active
@@ -73,7 +81,9 @@ void Synthesizer::GetAudioSamples( int audioSampleCount, int16_t *buffer )
 				double currentOscillatorPhase = note->oscilatorPhase;
 				int16_t oscAmp = sineOscillator->lookup( round( currentOscillatorPhase ) );
 				int16_t scaledAmp = (int16_t)( ( ( double )oscAmp * volume) * envelopeFactor );
-				buffer[j] += scaledAmp;
+				int32_t accumulatedAmp = buffer[j] + scaledAmp;
+				accumulatedAmp = ( accumulatedAmp > 0x8000 ) ? 0x8000 : ( accumulatedAmp < -0x7FFF ) ? -0x7FFF : accumulatedAmp;
+				buffer[j] = accumulatedAmp;
 				currentOscillatorPhase += oscillatorDelta;
 				if ( currentOscillatorPhase > sineOscillator->mTableSize ) {
 					currentOscillatorPhase = currentOscillatorPhase - sineOscillator->mTableSize;
@@ -94,26 +104,50 @@ void Synthesizer::GetAudioSamples( int audioSampleCount, int16_t *buffer )
 
 void Synthesizer::MIDIMessage( uint8_t* msg, int messageLength )
 {
-	uint8_t message = msg[0] & 0xF0;
-	if ( message == 0x80 || ( message == 0x90 && msg[2] == 0 ) ) {
-		// note off
-		// search for the equivalent note on
-		MIDINote* n = NULL;
-		for ( int i = 0; i < MAX_POLYPHONY; i++ ) {
-			if ( notes[i]->getPitch() == msg[1]) {
-				n = notes[i];
-				break;
+	inputStream->Write( messageLength,msg);
+}
+
+
+void Synthesizer::CheckInputStream ( )
+{
+	if ( inputStream->NumberOfBytesToRead() > 2 ) { // this is bad, needs writing properly
+		uint8_t msg[3];
+		inputStream->Read(3 ,msg );
+		uint8_t message = msg[0] & 0xF0;
+		if ( message == 0x80 || ( message == 0x90 && msg[2] == 0 ) ) {
+			// note off
+			// search for the equivalent note on
+			MIDINote* n = NULL;
+			for ( int i = 0; i < MAX_POLYPHONY; i++ ) {
+				if ( notes[i]->getPitch() == msg[1] && notes[i]->isKeydown()) {
+					n = notes[i];
+					break;
+				}
+			}
+			if ( n != NULL ) {
+				n->updateFromMIDIMessage( msg, 3 );
 			}
 		}
-		if ( n != NULL ) {
-			n->updateFromMIDIMessage( msg, messageLength );
-		}
-	}
-	else if ( message == 0x90 ) {
-		// find the next slot for a new note
-		notes[noteIndex++]->updateFromMIDIMessage(msg, messageLength );
-		if ( noteIndex == MAX_POLYPHONY ) {
-			noteIndex = 0; // rotate
+		else if ( message == 0x90 ) {
+			// find the next slot for a new note
+			// find free note
+			for ( int i = 0; i < MAX_POLYPHONY; i++ ) {
+				MIDINote* n = notes[i];
+				if ( n->getPitch() == msg[1] ) {
+					if ( n->isKeydown() ) {
+						// oops we've got an extra noteon
+						break;
+					}
+				}
+				else if ( n->getPitch() == 0){
+					n->updateFromMIDIMessage(msg,3);
+					break;
+				}
+			}
+			//notes[noteIndex++]->updateFromMIDIMessage(msg, 3 );
+			//if ( noteIndex == MAX_POLYPHONY ) {
+			//	noteIndex = 0; // rotate
+			//}
 		}
 	}
 }

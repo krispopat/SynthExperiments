@@ -19,7 +19,7 @@ enum TableType {
 };
 
 const double pi = 3.14159265358979323846;
-const int16_t amplitude = 0x2000; // 1<<15
+const int16_t amplitude = 0x4000; // 1<<15
 
 class WaveTable {
 public:

@@ -1,6 +1,7 @@
 package uk.co.krispopat.synthexperiments;
 
 import uk.co.krispopat.synth.AndroidGlue;
+import uk.co.krispopat.synthexperiments.views.MIDIKeys;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
@@ -8,8 +9,6 @@ import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.View;
-import android.widget.ToggleButton;
 
 public class MainActivity extends Activity {
 	
@@ -17,6 +16,7 @@ public class MainActivity extends Activity {
 	private WaveView waveView;
 	private int interval = 40; // 25 fps
 	private Handler handler;
+	private MIDIKeys MIDIKeysView;
 	
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 	@Override
@@ -36,9 +36,12 @@ public class MainActivity extends Activity {
 		androidGlue.synthInit(false, sampleRate, bufferSize);
 		
 		waveView = (WaveView) this.findViewById(R.id.waveView1);
+		MIDIKeysView = (MIDIKeys) this.findViewById(R.id.mIDIKeys1);
+		MIDIKeysView.setSynthGlue(androidGlue);
 		updateWaveView();
 		handler = new Handler();
 		handler.postDelayed(updater, interval);
+		
 	}
 	
 	
@@ -65,58 +68,6 @@ public class MainActivity extends Activity {
 		androidGlue.synthDestroy();
 	}
 
-
-
-	public void noteButtonClicked ( View v )
-	{
-		ToggleButton button = (ToggleButton)v;
-		
-		int buttonId = button.getId();
-		boolean state = button.isChecked();
-		
-		int note = 0;
-		
-		switch ( buttonId ) {
-		case R.id.tbc:
-			note = 60;
-			break;
-			
-		case R.id.tbd:
-			note = 62;
-			break;
-			
-		case R.id.tbe:
-			note = 64;
-			break;
-			
-		case R.id.tbf:
-			note = 65;
-			break;
-			
-		case R.id.tbg:
-			note = 67;
-			break;
-			
-		case R.id.tba:
-			note = 69;
-			break;
-			
-		case R.id.tbb:
-			note = 71;
-			break;
-
-		}
-		
-		byte msg[] = new byte[3];
-		
-		msg[0] = (byte) ((state == true )?0x90:0x80);
-		msg[1] = (byte) note;
-		msg[2] = (byte) 90;
-		
-		androidGlue.synthMIDIMessage(msg);
-		
-		
-	}
 	
 	
 }
