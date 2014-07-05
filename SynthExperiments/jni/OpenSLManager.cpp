@@ -177,7 +177,7 @@ int OpenSLManager::getOutputBufferSize()
 
 
 // protected methods
-// This function treats mBuffer as three buffers
+// This function treats mBuffer as two buffers
 // by using pointer arithmetic.
 // This practice is borrowed from Music Synthesizer for Android (url...)
 void OpenSLManager::transferSamples( SLAndroidSimpleBufferQueueItf queue )

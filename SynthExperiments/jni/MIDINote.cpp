@@ -43,7 +43,7 @@ void MIDINote::resetNoteData( )
 	keydown = false;
 	active = false;
 	frequency = 0;
-	oscilatorPhase = 0;
+	generatorPhase = 0;
 	envelopePhase = 0;
 	envelopePhasePosition = 0;
 	envelopeFactor = 0;
@@ -65,7 +65,7 @@ bool MIDINote::updateFromMIDIMessage(uint8_t* msg, int msgLength)
 		velocity = msg[2];
 		envelopePhase = 0;
 		frequency = computeFrequency();
-		oscilatorPhase = 0;
+		generatorPhase = 0;
 		envelopePhasePosition = 0;
 		envelopeFactor = 0;
 		active = true;

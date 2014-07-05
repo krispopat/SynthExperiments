@@ -8,13 +8,15 @@
 #include <ADSREnvelope.h>
 #include <CyclicBuffer.h>
 #include <MIDINote.h>
+#include <Oscillator.h>
 #include <stddef.h>
+//#include <SampleGenerator.h>
 #include <Synthesizer.h>
 #include <WaveTable.h>
-#include <cmath>
+//#include <cmath>
 
 
-Synthesizer::Synthesizer( int inBufferSize, int inSampleRate ):SoundDistributor(inBufferSize, inSampleRate )
+Synthesizer::Synthesizer( int inBufferSize, int inSampleRate, int16_t overallAmplitude ):SoundDistributor(inBufferSize, inSampleRate )
 {
 	envelope = new ADSREnvelope();
 	double envelopePhaseDelta = (1.0/sampleRate)*1000.0;
@@ -22,11 +24,12 @@ Synthesizer::Synthesizer( int inBufferSize, int inSampleRate ):SoundDistributor(
 	for ( int i = 0; i < MAX_POLYPHONY; i++ ) {
 		notes[i] = new MIDINote( envelope, envelopePhaseDelta );
 	}
-	sineOscillator = new WaveTable ( sine, 2048, 1 ); // just one cycle
-	sineOscillator->generateWave();
-	oscillatorFrequency = sampleRate / ( sineOscillator->mTableSize );
+	sineTable = new WaveTable ( sine, 2048, 1 ); // just one cycle
+	sineTable->generateWave();
+	generator = new Oscillator ( sineTable, sampleRate );
 	inputStream = new CyclicBuffer();
 	noteIndex = 0;
+	volume = overallAmplitude;
 }
 
 
@@ -40,8 +43,11 @@ Synthesizer::~Synthesizer() {
 	if ( envelope != NULL ) {
 		delete envelope;
 	}
-	if ( sineOscillator != NULL ) {
-		delete sineOscillator;
+	if ( generator != NULL ) {
+		delete generator;
+	}
+	if ( sineTable != NULL ) {
+		delete sineTable;
 	}
 	if ( inputStream != NULL ) {
 		delete inputStream;
@@ -66,9 +72,9 @@ void Synthesizer::GetAudioSamples( int audioSampleCount, int16_t *buffer )
 
 			// get frequency from note
 			// calculate delta for oscillator lookup
-			double oscillatorDelta = note->frequency / oscillatorFrequency;
+			double delta = generator->CalculateDeltaForFrequency( note->frequency );
 
-			double volume = note->getVelocity()/(double)127.0;
+			double noteVelocity = note->getVelocity()/(double)127.0;
 
 			for ( j = 0; j < audioSampleCount; j++ ) {
 				if ( firstIteration ) {
@@ -77,18 +83,17 @@ void Synthesizer::GetAudioSamples( int audioSampleCount, int16_t *buffer )
 				}
 				double envelopeFactor = note->calculateEnvelopeFactorPerSample();
 
-				// get a sample from the oscillator
-				double currentOscillatorPhase = note->oscilatorPhase;
-				int16_t oscAmp = sineOscillator->lookup( round( currentOscillatorPhase ) );
-				int16_t scaledAmp = (int16_t)( ( ( double )oscAmp * volume) * envelopeFactor );
-				int32_t accumulatedAmp = buffer[j] + scaledAmp;
-				accumulatedAmp = ( accumulatedAmp > 0x8000 ) ? 0x8000 : ( accumulatedAmp < -0x7FFF ) ? -0x7FFF : accumulatedAmp;
-				buffer[j] = accumulatedAmp;
-				currentOscillatorPhase += oscillatorDelta;
-				if ( currentOscillatorPhase > sineOscillator->mTableSize ) {
-					currentOscillatorPhase = currentOscillatorPhase - sineOscillator->mTableSize;
-				}
-				note->oscilatorPhase = currentOscillatorPhase;
+				// calculate the current amplitude
+				int16_t amplitude = ( int16_t )( volume * envelopeFactor ) * noteVelocity;
+				int16_t sample = generator->GetSample( amplitude, note->generatorPhase );
+
+				int32_t accumulator = buffer[j] + sample;
+				accumulator = ( accumulator > 0x8000 ) ? 0x8000 : ( accumulator < -0x7FFF ) ? 0-0x7FFF : accumulator;
+
+				buffer[j] = accumulator;
+
+				note->generatorPhase += delta;
+
 			}
 			firstIteration = false; // don't clean buffer each time!
 		}

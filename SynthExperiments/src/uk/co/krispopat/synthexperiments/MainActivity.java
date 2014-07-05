@@ -33,7 +33,7 @@ public class MainActivity extends Activity {
 		
 		int sampleRate = Integer.parseInt(srs);
 		int bufferSize = Integer.parseInt(fpbs);
-		androidGlue.synthInit(false, sampleRate, bufferSize);
+		androidGlue.synthInit(false, sampleRate, bufferSize, 90);
 		
 		waveView = (WaveView) this.findViewById(R.id.waveView1);
 		MIDIKeysView = (MIDIKeys) this.findViewById(R.id.mIDIKeys1);

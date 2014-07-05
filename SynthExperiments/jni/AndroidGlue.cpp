@@ -38,13 +38,27 @@ jfloatArray convertFloatArray ( JNIEnv *env, float* nativeArray, int32_t arraySi
 	return returnArray;
 }
 
+jfloatArray convertDoubleArray ( JNIEnv *env, double* nativeArray, int32_t arraySize )
+{
+	jfloatArray returnArray = env->NewFloatArray( arraySize );
+	jfloat floats[arraySize];
+	int i;
+	for ( i = 0; i < arraySize; i++ ) {
+		floats[i] = nativeArray[i];
+	}
+	env->SetFloatArrayRegion(returnArray, 0, arraySize, floats );
+	return returnArray;
+}
+
+
 
 extern "C" {
-	void Java_uk_co_krispopat_synth_AndroidGlue_synthInit( JNIEnv *env, jobject obj, jboolean suspended, jint audioManagerSampleRate, jint audioManagerFramesPerBuffer )
+	void Java_uk_co_krispopat_synth_AndroidGlue_synthInit( JNIEnv *env, jobject obj, jboolean suspended, jint audioManagerSampleRate, jint audioManagerFramesPerBuffer, jint volume )
 	{
 		usleep(5000 * 1000);
 		int bufferSize = audioManagerFramesPerBuffer * 2;
-		gSynth = new Synthesizer( bufferSize, audioManagerSampleRate  );
+		int amplitude = ( 0x8000 / 128 ) * volume;
+		gSynth = new Synthesizer( bufferSize, audioManagerSampleRate,  amplitude );
 		gSLManager = new OpenSLManager ( gSynth, audioManagerSampleRate, bufferSize );
 		if ( !suspended ) {
 			gSLManager->Start();
@@ -102,31 +116,31 @@ extern "C" {
 	}
 
 
-	jshortArray Java_uk_co_krispopat_synth_AndroidGlue_getSineWave( JNIEnv *env, jobject object, jint s )
+	jfloatArray Java_uk_co_krispopat_synth_AndroidGlue_getSineWave( JNIEnv *env, jobject object, jint s )
 	{
 		WaveTable* sineTable = new WaveTable(sine, s, 44100);
 		sineTable->generateWave();
-		jshortArray returnArray = convertToJavaArray(env, sineTable->getTable(), s );
+		jfloatArray returnArray = convertDoubleArray(env, sineTable->getTable(), s );
 		delete sineTable;
 		return returnArray;
 	}
 
 
-	jshortArray Java_uk_co_krispopat_synth_AndroidGlue_getSawtoothWave ( JNIEnv *env, jobject object, jint s )
+	jfloatArray Java_uk_co_krispopat_synth_AndroidGlue_getSawtoothWave ( JNIEnv *env, jobject object, jint s )
 	{
 		WaveTable* sawtoothTable = new WaveTable(saw, s, 44100 );
 		sawtoothTable->generateWave();
-		jshortArray returnArray = convertToJavaArray ( env, sawtoothTable->getTable(), s );
+		jfloatArray returnArray = convertDoubleArray ( env, sawtoothTable->getTable(), s );
 		delete sawtoothTable;
 		return returnArray;
 	}
 
 
-	jshortArray Java_uk_co_krispopat_synth_AndroidGlue_getTriangleWave ( JNIEnv *env, jobject object, jint s )
+	jfloatArray Java_uk_co_krispopat_synth_AndroidGlue_getTriangleWave ( JNIEnv *env, jobject object, jint s )
 	{
 		WaveTable* triangleTable = new WaveTable(triangle, s, 44100 );
 		triangleTable->generateWave();
-		jshortArray returnArray = convertToJavaArray ( env, triangleTable->getTable(), s );
+		jfloatArray returnArray = convertDoubleArray ( env, triangleTable->getTable(), s );
 		delete triangleTable;
 		return returnArray;
 	}

@@ -49,10 +49,6 @@ int attr dividerPadding 0x7f010056
 int attr dividerVertical 0x7f01001a
 int attr dropDownListViewStyle 0x7f010021
 int attr dropdownListPreferredItemHeight 0x7f010048
-int attr exampleColor 0x7f010070
-int attr exampleDimension 0x7f01006f
-int attr exampleDrawable 0x7f010071
-int attr exampleString 0x7f01006e
 int attr expandActivityOverflowButtonDrawable 0x7f01006b
 int attr height 0x7f010026
 int attr homeAsUpIndicator 0x7f010013
@@ -325,8 +321,7 @@ int layout abc_search_dropdown_item_icons_2line 0x7f030015
 int layout abc_search_view 0x7f030016
 int layout abc_simple_decor 0x7f030017
 int layout activity_main 0x7f030018
-int layout sample_midikeys 0x7f030019
-int layout support_simple_spinner_dropdown_item 0x7f03001a
+int layout support_simple_spinner_dropdown_item 0x7f030019
 int string abc_action_bar_home_description 0x7f0a0001
 int string abc_action_bar_up_description 0x7f0a0002
 int string abc_action_menu_overflow_description 0x7f0a0003
@@ -548,11 +543,6 @@ int[] styleable LinearLayoutICS { 0x7f01002e, 0x7f010055, 0x7f010056 }
 int styleable LinearLayoutICS_divider 0
 int styleable LinearLayoutICS_dividerPadding 2
 int styleable LinearLayoutICS_showDividers 1
-int[] styleable MIDIKeys { 0x7f01006e, 0x7f01006f, 0x7f010070, 0x7f010071 }
-int styleable MIDIKeys_exampleColor 2
-int styleable MIDIKeys_exampleDimension 1
-int styleable MIDIKeys_exampleDrawable 3
-int styleable MIDIKeys_exampleString 0
 int[] styleable MenuGroup { 0x0101000e, 0x010100d0, 0x01010194, 0x010101de, 0x010101df, 0x010101e0 }
 int styleable MenuGroup_android_checkableBehavior 5
 int styleable MenuGroup_android_enabled 0

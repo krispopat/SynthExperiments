@@ -2,7 +2,7 @@ package uk.co.krispopat.synth;
 
 public class AndroidGlue {
 	
-	public native void synthInit(boolean suspended, int sampleRate, int bufferSize );
+	public native void synthInit(boolean suspended, int sampleRate, int bufferSize, int volume );
 	
 	public native void synthStart();
 	
@@ -14,11 +14,11 @@ public class AndroidGlue {
 	
 	public native float[] testRamp ( int rampType, int rampSize, int rampLengthMS, float startAmp, float endAmp );
 	
-	public native int[] getSineWave(int size);
+	public native float[] getSineWave(int size);
 	
-	public native int[] getSawtoothWave(int size);
+	public native float[] getSawtoothWave(int size);
 	
-	public native int[] getTriangleWave(int size);
+	public native float[] getTriangleWave(int size);
 	
 	public native short[] getOutputBuffer();
 	

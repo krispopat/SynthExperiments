@@ -11,13 +11,14 @@
 #include <cmath>
 
 
-WaveTable::WaveTable(TableType tableType,  int tableSize, float frequency) {
+WaveTable::WaveTable(TableType tableType,  int tableSize, float frequency )
+{
 	mTableType = tableType;
 
 	mTableSize = tableSize;
 	mFrequency = frequency;
 	if ( tableType != square ) {
-		mTable = (int16_t*)malloc(mTableSize * sizeof(int16_t));
+		mTable = (double*)malloc(mTableSize * sizeof(double));
 	}
 	else {
 		mTable = NULL;
@@ -50,9 +51,15 @@ void WaveTable::generateWave()
 	}
 }
 
-int16_t WaveTable::lookup(int32_t phase )
+
+// floating point interpolated array lookup
+double WaveTable::lookup( double phase )
 {
-	return mTable[phase];
+	double intPart;
+	double fracPart = modf( phase, &intPart );
+	double v1 = mTable[ (int)intPart ];
+	double v2 = mTable[ (int)intPart + 1 ];
+	return v1 + ( (v2 - v1 ) * fracPart );
 }
 
 
@@ -66,7 +73,7 @@ void WaveTable::generateSineWave()
 	int i;
 	for( i = 0; i < mTableSize; i++ ) {
 		double sineRotation = circularFrequency * ( deltaInc );
-		mTable[i] = round( amplitude * sin( sineRotation ) );
+		mTable[i] = sin( sineRotation );
 		deltaInc += delta;
 	}
 }
@@ -75,37 +82,37 @@ void WaveTable::generateSineWave()
 // simplest way possible - divide the buffer into ramp segments
 void WaveTable::generateTriangleWave()
 {
-	float delta = ( float )amplitude / ( ( ( float )mTableSize ) / 4 );
-	float increment = 0;
+	double delta = 1.0 / ( ( ( double )mTableSize ) / 4 );
+	double increment = 0;
 	int i;
 	for ( i = 0; i < ( mTableSize / 4 ); i++ ) {
-		mTable[i] = floor( increment );
+		mTable[i] = increment;
 		increment += delta;
 	}
 	for ( ; i < ( mTableSize / 4 ) *3 ; i++ ) {
-		mTable[i] = floor( increment );
+		mTable[i] = increment;
 		increment -= delta;
 	}
 	for ( ; i < mTableSize; i++ ) {
-		mTable[i] = floor( increment );
+		mTable[i] = increment;
 		increment += delta;
 	}
 }
 
 
-// again simple way divide teh buffer into two ascending ramps
+// again simple way divide the buffer into two ascending ramps
 void WaveTable::generateSawWave()
 {
-	float delta = ( float )amplitude / ( ( ( float )mTableSize ) / 2 );
-	float increment = 0;
+	float delta = 1.0 / ( ( ( double )mTableSize ) / 2 );
+	double increment = 0;
 	int i;
 	for ( i = 0; i < ( mTableSize / 2 ); i++ ) {
-		mTable[i] = floor(increment);
+		mTable[i] = increment;
 		increment += delta;
 	}
-	increment = -1 * amplitude;
+	increment = -1.0;
 	for ( ; i < mTableSize; i++ ) {
-		mTable[i] = floor(increment);
+		mTable[i] = increment;
 		increment += delta;
 	}
 }

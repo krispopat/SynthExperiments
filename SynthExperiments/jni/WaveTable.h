@@ -19,18 +19,20 @@ enum TableType {
 };
 
 const double pi = 3.14159265358979323846;
-const int16_t amplitude = 0x4000; // 1<<15
+//const int16_t amplitude = 0x4000; // 1<<15
 
 class WaveTable {
 public:
-				WaveTable(TableType tableType,  int tableSize, float frequency);
+				WaveTable(TableType tableType,  int tableSize, float frequency );
 	virtual		~WaveTable();
 
 	void 		generateWave();
 
-	int16_t		lookup(int32_t phase);
+	double		lookup( int32_t phase ) { return mTable[phase];}
 
-	int16_t*	getTable() { return mTable; }
+	double		lookup( double phase ); // interpolated
+
+	double*		getTable() { return mTable; }
 
 	int			mTableSize;
 	float		mFrequency;
@@ -44,7 +46,7 @@ private:
 	TableType	mTableType;
 
 
-	int16_t		*mTable;
+	double		*mTable;
 };
 
 #endif /* WAVETABLE_H_ */

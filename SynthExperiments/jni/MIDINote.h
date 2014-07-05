@@ -43,7 +43,7 @@ public:
 	// public properties - accessed in real time.
 
 	double		frequency;
-	double		oscilatorPhase;
+	double		generatorPhase;
 
 	uint8_t		envelopePhase;
 	double		envelopePhasePosition;
